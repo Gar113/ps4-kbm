@@ -1,0 +1,30 @@
+name: build
+on: [workflow_dispatch, push]
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ekstrak proyek
+        run: unzip -q ps4-kbm.zip
+      - name: Tes logika
+        run: make -C ps4-kbm test
+      - name: Pasang toolchain
+        run: |
+          sudo apt-get update && sudo apt-get install -y clang lld
+          mkdir oo && cd oo
+          gh release download -R OpenOrbis/OpenOrbis-PS4-Toolchain --pattern "*linux*"
+          ls; for f in *.tar.gz; do tar xzf "$f"; done
+          cd ..
+          git clone --depth 1 https://github.com/GoldHEN/GoldHEN_Plugins_SDK.git sdk
+      - name: Build plugin
+        run: |
+          export OO_PS4_TOOLCHAIN=$PWD/oo
+          export GOLDHEN_SDK=$PWD/sdk
+          make -C ps4-kbm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ps4-kbm-prx
+          path: ps4-kbm/*.prx
