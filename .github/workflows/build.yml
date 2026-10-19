@@ -15,15 +15,22 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y clang lld
           mkdir oo && cd oo
-          gh release download -R OpenOrbis/OpenOrbis-PS4-Toolchain --pattern "*linux*"
-          ls; for f in *.tar.gz; do tar xzf "$f"; done
+          gh release download -R OpenOrbis/OpenOrbis-PS4-Toolchain --pattern "*.tar.gz"
+          ls -la
+          for f in *.tar.gz; do tar xzf "$f"; done
           cd ..
-          git clone --depth 1 https://github.com/GoldHEN/GoldHEN_Plugins_SDK.git sdk
-      - name: Build plugin
+          OO=$(dirname "$(find "$PWD/oo" -name link.x | head -1)")
+          echo "OO_PS4_TOOLCHAIN=$OO" >> "$GITHUB_ENV"
+          chmod -R +x "$OO/bin/linux" || true
+          echo "Toolchain: $OO"
+      - name: Pasang GoldHEN SDK
         run: |
-          export OO_PS4_TOOLCHAIN=$PWD/oo
-          export GOLDHEN_SDK=$PWD/sdk
-          make -C ps4-kbm
+          git clone --depth 1 https://github.com/GoldHEN/GoldHEN_Plugins_SDK.git sdk
+          make -C sdk
+          ls sdk
+          echo "GOLDHEN_SDK=$PWD/sdk" >> "$GITHUB_ENV"
+      - name: Build plugin
+        run: make -C ps4-kbm
       - uses: actions/upload-artifact@v4
         with:
           name: ps4-kbm-prx
