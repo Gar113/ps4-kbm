@@ -30,6 +30,10 @@ jobs:
           make -C sdk
           ls sdk
           echo "GOLDHEN_SDK=$PWD/sdk" >> "$GITHUB_ENV"
+      - name: Info SDK
+        run: |
+          ls sdk/include
+          grep -rn "plugin_load\|module_start\|attr_\|HOOK32\|define HOOK\|Detour_" sdk/include | head -60
       - name: Build plugin
         run: make -C ps4-kbm
       - uses: actions/upload-artifact@v4
