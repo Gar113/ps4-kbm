@@ -13,7 +13,8 @@ jobs:
         run: make -C ps4-kbm test
       - name: Pasang toolchain
         run: |
-          sudo apt-get update && sudo apt-get install -y clang lld
+          sudo apt-get update && sudo apt-get install -y clang lld llvm
+          command -v llvm-ar || sudo ln -sf "$(ls /usr/bin/llvm-ar-* | head -1)" /usr/bin/llvm-ar
           mkdir oo && cd oo
           gh release download -R OpenOrbis/OpenOrbis-PS4-Toolchain --pattern "*.tar.gz"
           ls -la
